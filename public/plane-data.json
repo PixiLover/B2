@@ -1,0 +1,161 @@
+{
+  "frames": {
+    "plane_0": {
+      "frame": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_1": {
+      "frame": { "x": 424, "y": 0, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_2": {
+      "frame": { "x": 848, "y": 0, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_3": {
+      "frame": { "x": 1272, "y": 0, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+
+    "plane_4": {
+      "frame": { "x": 0, "y": 456, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_5": {
+      "frame": { "x": 424, "y": 456, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_6": {
+      "frame": { "x": 848, "y": 456, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_7": {
+      "frame": { "x": 1272, "y": 456, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+
+    "plane_8": {
+      "frame": { "x": 0, "y": 912, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_9": {
+      "frame": { "x": 424, "y": 912, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_10": {
+      "frame": { "x": 848, "y": 912, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_11": {
+      "frame": { "x": 1272, "y": 912, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+
+    "plane_12": {
+      "frame": { "x": 0, "y": 1368, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_13": {
+      "frame": { "x": 424, "y": 1368, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_14": {
+      "frame": { "x": 848, "y": 1368, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    },
+    "plane_15": {
+      "frame": { "x": 1272, "y": 1368, "w": 424, "h": 456 },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": { "x": 0, "y": 0, "w": 424, "h": 456 },
+      "sourceSize": { "w": 424, "h": 456 }
+    }
+  },
+  "animations": {
+    "fly": [
+      "plane_0",
+      "plane_1",
+      "plane_2",
+      "plane_3",
+      "plane_4",
+      "plane_5",
+      "plane_6",
+      "plane_7",
+      "plane_8",
+      "plane_9",
+      "plane_10",
+      "plane_11",
+      "plane_12",
+      "plane_13",
+      "plane_14",
+      "plane_15",
+      "plane_14",
+      "plane_13",
+      "plane_12",
+      "plane_11",
+      "plane_10",
+      "plane_9",
+      "plane_8",
+      "plane_7",
+      "plane_6",
+      "plane_5",
+      "plane_4",
+      "plane_3",
+      "plane_2",
+      "plane_1"
+    ]
+  },
+  "meta": {
+    "app": "pixi",
+    "version": "1.0",
+    "image": "sprite-max-px-16.png",
+    "format": "RGBA8888",
+    "size": { "w": 1696, "h": 1824 },
+    "scale": "1"
+  }
+}
