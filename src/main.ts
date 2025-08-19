@@ -89,11 +89,13 @@ const speed = 2;
 function spawnCity(x: number) {
   const tex = cityTextures[(Math.random() * cityTextures.length) | 0];
   const city = new Sprite(tex);
+
   city.zIndex = 101;
   city.anchor.set(0.5);
-  city.scale.set(0.5);
+  city.scale.set(1.5);
   city.x = x;
-  city.y = app.screen.height - city.height / 2;
+  city.y = app.screen.height + 50;
+  city.alpha = 0.1;
   app.stage.addChild(city);
   cities.push(city);
 }
