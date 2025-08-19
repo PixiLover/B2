@@ -1,4 +1,11 @@
-import { Application, Assets, AnimatedSprite, Sprite } from "pixi.js";
+import {
+  Application,
+  Assets,
+  AnimatedSprite,
+  Sprite,
+  Graphics,
+  Ticker,
+} from "pixi.js";
 import { Howl } from "howler";
 
 const app = new Application();
@@ -30,8 +37,8 @@ plane.scale.set(0.5);
 plane.animationSpeed = speedForFrame(0);
 plane.onFrameChange = () => {
   plane.animationSpeed = speedForFrame(plane.currentFrame);
-  console.log(plane.currentFrame);
 };
+plane.zIndex = 102;
 plane.play();
 plane.anchor.set(0.5);
 plane.x = app.screen.width * 0.3;
@@ -82,6 +89,7 @@ const speed = 2;
 function spawnCity(x: number) {
   const tex = cityTextures[(Math.random() * cityTextures.length) | 0];
   const city = new Sprite(tex);
+  city.zIndex = 101;
   city.anchor.set(0.5);
   city.scale.set(0.5);
   city.x = x;
@@ -134,3 +142,91 @@ app.ticker.add(() => {
     plane.y = hoverY + offsetY;
   }
 });
+
+function addStars() {
+  type Star = Graphics & {
+    speed: number;
+    blink?: boolean;
+    blinkPhase?: number;
+    blinkSpeed?: number;
+  };
+
+  app.stage.sortableChildren = true;
+
+  const STAR_MARGIN = 300;
+  const starCount = Math.ceil(app.screen.width / 15);
+  const stars: Star[] = [];
+
+  // create and add to stage
+  for (let i = 0; i < starCount; i++) {
+    const star = new Graphics() as Star;
+
+    // position within screen, with small overscan so edges aren't empty
+    star.x = Math.random() * (app.screen.width + STAR_MARGIN * 2) - STAR_MARGIN;
+    star.y =
+      Math.random() * (app.screen.height + STAR_MARGIN * 2) - STAR_MARGIN;
+
+    // size
+    const small = 0.2 + Math.random() * 1.1;
+    const big = 1 + Math.random() * 1.2;
+    const r = Math.random() < 0.5 ? small : big;
+
+    // blink
+    if (Math.random() < 0.1) {
+      star.blink = true;
+      star.blinkPhase = Math.random() * Math.PI * 3;
+      star.blinkSpeed = 2000 + Math.random() * 3000;
+    }
+
+    // draw
+    star.star(0, 0, 4, r, r / 2);
+    star.fill({ color: 0xffffff, alpha: 0.7 });
+    star.zIndex = 100;
+
+    // speed: small stars a bit slower, big a bit faster
+    const minSpeed = 1.2;
+    const maxSpeed = 2.6;
+    const t = Math.min(1, Math.max(0, (r - 0.2) / (2.2 - 0.2))); // 0..1
+    star.speed = minSpeed + t * (maxSpeed - minSpeed);
+
+    app.stage.addChild(star);
+    stars.push(star);
+  }
+
+  // multipliers and tickers
+  let accel = 0; // extra scroll after a few seconds
+  let frames = 0;
+
+  const moveTicker = new Ticker();
+  moveTicker.add((ticker) => {
+    const dt = ticker.deltaTime; // frames at 60 fps ≈ 1
+    frames += dt;
+
+    if (frames > 240 && accel < 2.5) {
+      accel = Math.min(2.5, accel + 0.005 * dt);
+    }
+
+    for (const s of stars) {
+      s.x -= (s.speed + accel) * dt; // dt is number now
+      if (s.x < -STAR_MARGIN) {
+        s.x = app.screen.width + STAR_MARGIN;
+        s.y = Math.random() * app.screen.height;
+      }
+    }
+  });
+  moveTicker.start();
+
+  const blinkTicker = new Ticker();
+  blinkTicker.add((_ticker) => {
+    const now = performance.now();
+    for (const s of stars) {
+      if (s.blink) {
+        const a = Math.abs(Math.sin(now / s.blinkSpeed! + s.blinkPhase!));
+        s.alpha = 0.35 + 0.65 * a;
+      }
+    }
+  });
+  blinkTicker.start();
+}
+
+addStars();
