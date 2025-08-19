@@ -50,7 +50,7 @@ const planeSound = new Howl({
   loop: true,
   volume: 0.7,
 });
-// planeSound.play();
+planeSound.play();
 
 // params
 
