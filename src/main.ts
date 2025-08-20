@@ -1,11 +1,4 @@
-import {
-  Application,
-  Assets,
-  AnimatedSprite,
-  Sprite,
-  Graphics,
-  Ticker,
-} from "pixi.js";
+import { Application, Assets, AnimatedSprite, Graphics, Ticker } from "pixi.js";
 import { Howl } from "howler";
 
 const app = new Application();
@@ -33,7 +26,7 @@ function speedForFrame(frame: number) {
   return minSpeed + (maxSpeed - minSpeed) * factor;
 }
 const plane = new AnimatedSprite(sheet.animations.fly);
-plane.scale.set(0.5);
+plane.scale.set(0.8);
 plane.animationSpeed = speedForFrame(0);
 plane.onFrameChange = () => {
   plane.animationSpeed = speedForFrame(plane.currentFrame);
@@ -41,7 +34,7 @@ plane.onFrameChange = () => {
 plane.zIndex = 102;
 plane.play();
 plane.anchor.set(0.5);
-plane.x = app.screen.width * 0.3;
+plane.x = app.screen.width * 0.5;
 plane.y = app.screen.height * 0.5;
 app.stage.addChild(plane);
 
@@ -55,94 +48,88 @@ planeSound.play();
 // params
 
 const hoverY = app.screen.height * 0.35; // ceiling to stop climbing
-const edgeMargin = 250;
+// const edgeMargin = 250;
 
-let hovering = false;
-const targetX = () => app.screen.width - edgeMargin;
+// let hovering = false;
+// const targetX = () => app.screen.width - edgeMargin;
 let t0 = performance.now();
 
-const romeTexture = await Assets.load("/cities/Rome.webp");
-const londonTexture = await Assets.load("/cities/london.webp");
-const brasilTexture = await Assets.load("/cities/brazil.webp");
-const canadaTexture = await Assets.load("/cities/canada.webp");
-const parisTexture = await Assets.load("/cities/paris.webp");
-const nyTexture = await Assets.load("/cities/ny.webp");
-const egyptTexture = await Assets.load("/cities/egypt.webp");
-const maliTexture = await Assets.load("/cities/mali.webp");
-const indiaTexture = await Assets.load("/cities/india.webp");
+// const romeTexture = await Assets.load("/cities/Rome.webp");
+// const londonTexture = await Assets.load("/cities/london.webp");
+// const brasilTexture = await Assets.load("/cities/brazil.webp");
+// const canadaTexture = await Assets.load("/cities/canada.webp");
+// const parisTexture = await Assets.load("/cities/paris.webp");
+// const nyTexture = await Assets.load("/cities/ny.webp");
+// const egyptTexture = await Assets.load("/cities/egypt.webp");
+// const maliTexture = await Assets.load("/cities/mali.webp");
+// const indiaTexture = await Assets.load("/cities/india.webp");
 
-const cityTextures = [
-  romeTexture,
-  londonTexture,
-  brasilTexture,
-  canadaTexture,
-  parisTexture,
-  nyTexture,
-  egyptTexture,
-  maliTexture,
-  indiaTexture,
-];
+// const cityTextures = [
+//   romeTexture,
+//   londonTexture,
+//   brasilTexture,
+//   canadaTexture,
+//   parisTexture,
+//   nyTexture,
+//   egyptTexture,
+//   maliTexture,
+//   indiaTexture,
+// ];
 
-const cities: Sprite[] = [];
-const speed = 2;
+// const cities: Sprite[] = [];
+// const speed = 2;
 
-function spawnCity(x: number) {
-  const tex = cityTextures[(Math.random() * cityTextures.length) | 0];
-  const city = new Sprite(tex);
+// function spawnCity(x: number) {
+//   const tex = cityTextures[(Math.random() * cityTextures.length) | 0];
+//   const city = new Sprite(tex);
 
-  city.zIndex = 101;
-  city.anchor.set(0.5);
-  city.scale.set(1.5);
-  city.x = x;
-  city.y = app.screen.height + 50;
-  city.alpha = 0.1;
-  app.stage.addChild(city);
-  cities.push(city);
-}
+//   city.zIndex = 101;
+//   city.anchor.set(0.5);
+//   city.scale.set(1.5);
+//   city.x = x;
+//   city.y = app.screen.height + 50;
+//   city.alpha = 0.1;
+//   app.stage.addChild(city);
+//   cities.push(city);
+// }
 
-// first city
-spawnCity(app.screen.width * 0.7);
+// // first city
+// spawnCity(app.screen.width * 0.7);
 
 app.ticker.add(() => {
-  for (let i = cities.length - 1; i >= 0; i--) {
-    const c = cities[i];
-    c.x -= speed;
+  // for (let i = cities.length - 1; i >= 0; i--) {
+  //   const c = cities[i];
+  //   c.x -= speed;
 
-    // if off left, remove
-    if (c.x < -100) {
-      app.stage.removeChild(c);
-      cities.splice(i, 1);
-    }
-  }
+  //   // if off left, remove
+  //   if (c.x < -100) {
+  //     app.stage.removeChild(c);
+  //     cities.splice(i, 1);
+  //   }
+  // }
 
-  // if only one city left and it's near the left side, spawn next
-  if (cities.length === 1 && cities[0].x < app.screen.width * 0.4) {
-    spawnCity(app.screen.width + 150); // new one from right
-  }
+  // // if only one city left and it's near the left side, spawn next
+  // if (cities.length === 1 && cities[0].x < app.screen.width * 0.4) {
+  //   spawnCity(app.screen.width + 150); // new one from right
+  // }
   const t = performance.now() - t0;
-  if (!hovering) {
-    // smooth approach on X
-    const dx = targetX() - plane.x;
-    plane.x += Math.min(2.0, dx * 0.08);
+  // if (!hovering) {
+  //   // smooth approach on X
+  //   const dx = targetX() - plane.x;
+  //   plane.x += Math.min(2.0, dx * 0.08);
 
-    // smooth climb on Y
-    plane.y += (hoverY - plane.y) * 0.06;
+  //   // smooth climb on Y
+  //   plane.y += (hoverY - plane.y) * 0.06;
 
-    const pad = 40;
-    plane.y = Math.max(pad, Math.min(app.screen.height - pad, plane.y));
+  //   const pad = 40;
+  //   plane.y = Math.max(pad, Math.min(app.screen.height - pad, plane.y));
 
-    if (Math.abs(dx) < 1.5) {
-      plane.x = targetX();
-      hovering = true;
-    }
-  } else {
-    // horizontal swing + vertical bob
-    // const offsetX = Math.sin(t * 0.0008) * 40; // slower side-to-side
-    const offsetY = Math.sin(t * 0.001) * 20; // slower up-down
+  // horizontal swing + vertical bob
+  // const offsetX = Math.sin(t * 0.0008) * 40; // slower side-to-side
+  const offsetY = Math.sin(t * 0.001) * 10; // slower up-down
 
-    // plane.x = targetX() + offsetX;
-    plane.y = hoverY + offsetY;
-  }
+  // plane.x = targetX() + offsetX;
+  plane.y = hoverY + offsetY;
 });
 
 function addStars() {
@@ -196,7 +183,7 @@ function addStars() {
   }
 
   // multipliers and tickers
-  let accel = 0; // extra scroll after a few seconds
+  // let accel = 0; // extra scroll after a few seconds
   let frames = 0;
 
   const moveTicker = new Ticker();
@@ -204,12 +191,12 @@ function addStars() {
     const dt = ticker.deltaTime; // frames at 60 fps ≈ 1
     frames += dt;
 
-    if (frames > 240 && accel < 2.5) {
-      accel = Math.min(2.5, accel + 0.005 * dt);
-    }
+    // if (frames > 240 && accel < 2.5) {
+    //   accel = Math.min(2.5, accel + 0.005 * dt);
+    // }
 
     for (const s of stars) {
-      s.x -= (s.speed + accel) * dt; // dt is number now
+      s.x -= 1.5 * dt; // dt is number now
       if (s.x < -STAR_MARGIN) {
         s.x = app.screen.width + STAR_MARGIN;
         s.y = Math.random() * app.screen.height;
