@@ -1,231 +1,200 @@
-import {Application, Assets, AnimatedSprite, Graphics, Ticker} from "pixi.js";
-import {Howl} from "howler";
+import { Application, Assets, AnimatedSprite, Texture } from "pixi.js";
+import { Howl } from "howler";
+
+const IDLE = 21;
+const MIN = 16;
+const DEF = 21;
+const MAX = 25;
+const IDLE_DURATION = 5000;
+const BOBBING_SPEED = 0.001;
+const BOBBING_AMPLITUDE = 10;
+
+const createSequences = () => {
+    const range = (a: number, b: number) => {
+        const length = Math.abs(b - a) + 1;
+        const step = a <= b ? 1 : -1;
+        const arr = new Array(length);
+        for (let i = 0; i < length; i++) {
+            arr[i] = a + i * step;
+        }
+        return arr;
+    };
+
+    const seqFullIdx = [...range(DEF, MIN), ...range(MIN, MAX), ...range(MAX, DEF)];
+    const seqHalfIdx = [...range(DEF, MIN), ...range(MIN, DEF)];
+    const seqSecondHalfIdx = [...range(DEF, MAX), MAX, ...range(MAX, DEF)];
+
+    const tex = (i: number) => Texture.from(`plane_${Math.max(0, Math.min(MAX, i))}`);
+    
+    return {
+        full: seqFullIdx.map(tex),
+        half: seqHalfIdx.map(tex),
+        secondHalf: seqSecondHalfIdx.map(tex),
+        indices: {
+            full: seqFullIdx,
+            half: seqHalfIdx,
+            secondHalf: seqSecondHalfIdx
+        }
+    };
+};
+
+class AnimationState {
+    private currentAbsIdx: number[] = [IDLE];
+    private isIdle: boolean = true;
+
+    setState(indices: number[]) {
+        this.currentAbsIdx = indices;
+        this.isIdle = false;
+    }
+
+    setIdle() {
+        this.currentAbsIdx = [IDLE];
+        this.isIdle = true;
+    }
+
+    getCurrentIndex(): number {
+        return this.currentAbsIdx[0] || IDLE;
+    }
+
+    isInIdleState(): boolean {
+        return this.isIdle;
+    }
+}
+
+class OptimizedAnimationController {
+    private timer: number | undefined;
+    private state: AnimationState;
+    private plane: AnimatedSprite;
+    private sequences: ReturnType<typeof createSequences>;
+
+    constructor(plane: AnimatedSprite, sequences: ReturnType<typeof createSequences>) {
+        this.plane = plane;
+        this.sequences = sequences;
+        this.state = new AnimationState();
+        this.setupEventHandlers();
+    }
+
+    private setupEventHandlers() {
+        this.plane.onFrameChange = () => {
+            this.plane.animationSpeed = 0.20;
+        };
+
+        this.plane.onComplete = () => {
+            this.setIdle();
+            this.scheduleNextAnimation();
+        };
+    }
+
+    private setIdle() {
+        this.state.setIdle();
+        this.plane.textures = [this.sequences.full[0]];
+        this.plane.gotoAndStop(0);
+    }
+
+    private playSequence(name: 'full' | 'half' | 'secondHalf') {
+        const indices = this.sequences.indices[name];
+        this.state.setState(indices);
+        this.plane.textures = this.sequences[name];
+        this.plane.gotoAndPlay(0);
+    }
+
+    private scheduleNextAnimation() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+        
+        const randomIndex = (Math.random() * 3) | 0;
+        const sequenceNames: ('full' | 'half' | 'secondHalf')[] = ["full", "half", "secondHalf"];
+        const randomSequence = sequenceNames[randomIndex];
+        
+        this.timer = window.setTimeout(() => {
+            this.playSequence(randomSequence);
+        }, IDLE_DURATION);
+    }
+
+    start() {
+        this.setIdle();
+        this.scheduleNextAnimation();
+    }
+
+    destroy() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = undefined;
+        }
+    }
+}
 
 async function runApplication() {
     const app = new Application();
-    await app.init({background: 0x0b1020, resizeTo: window});
-    document.getElementById("app")?.appendChild(app.canvas);
-
-
-    const sheet = await Assets.load("plane-data-64.json");
-
-    function speedForFrame(frame: number) {
-        const targets = [0, 17, 37, 48];
-
-        // find nearest slow point
-        const nearest = targets.reduce(
-            (a, b) => (Math.abs(frame - b) < Math.abs(frame - a) ? b : a),
-            targets[0],
-        );
-
-        const dist = Math.abs(frame - nearest);
-
-        // normalize distance (0 → 1)
-        const factor = Math.min(dist / 10, 1);
-
-        // map to range 0.11 .. 0.17
-        const minSpeed = 0.12;
-        const maxSpeed = 0.15;
-        return minSpeed + (maxSpeed - minSpeed) * factor;
+    await app.init({ 
+        background: 0x0b1020, 
+        resizeTo: window,
+        antialias: false,
+        powerPreference: "high-performance"
+    });
+    
+    const appElement = document.getElementById("app");
+    if (appElement) {
+        appElement.appendChild(app.canvas);
     }
 
-    const plane = new AnimatedSprite(sheet.animations.fly);
+    await Assets.load("plane-data-64.json");
+
+    const sequences = createSequences();
+
+    const plane = new AnimatedSprite([sequences.full[0]]);
+    plane.loop = false;
     plane.scale.set(0.8);
-    plane.animationSpeed = speedForFrame(0);
-    plane.onFrameChange = () => {
-        plane.animationSpeed = speedForFrame(plane.currentFrame);
-    };
     plane.zIndex = 102;
-    plane.play();
     plane.anchor.set(0.5);
     plane.x = app.screen.width * 0.5;
-    plane.y = app.screen.height * 0.5;
+    plane.y = app.screen.height * 0.35;
+    
+    plane.cacheAsTexture(false);
+    plane.tint = 0xFFFFFF;
+    
     app.stage.addChild(plane);
 
-    const planeSound = new Howl({
-        src: ["audio.mp3"],
-        loop: true,
-        volume: 0.7,
+    const animationController = new OptimizedAnimationController(plane, sequences);
+    animationController.start();
+
+    const planeSound = new Howl({ 
+        src: ["audio.mp3"], 
+        loop: true, 
+        volume: 0.7 
     });
     planeSound.play();
 
-// params
-
-    const hoverY = app.screen.height * 0.35; // ceiling to stop climbing
-// const edgeMargin = 250;
-
-// let hovering = false;
-// const targetX = () => app.screen.width - edgeMargin;
-    let t0 = performance.now();
-
-// const romeTexture = await Assets.load("/cities/Rome.webp");
-// const londonTexture = await Assets.load("/cities/london.webp");
-// const brasilTexture = await Assets.load("/cities/brazil.webp");
-// const canadaTexture = await Assets.load("/cities/canada.webp");
-// const parisTexture = await Assets.load("/cities/paris.webp");
-// const nyTexture = await Assets.load("/cities/ny.webp");
-// const egyptTexture = await Assets.load("/cities/egypt.webp");
-// const maliTexture = await Assets.load("/cities/mali.webp");
-// const indiaTexture = await Assets.load("/cities/india.webp");
-
-// const cityTextures = [
-//   romeTexture,
-//   londonTexture,
-//   brasilTexture,
-//   canadaTexture,
-//   parisTexture,
-//   nyTexture,
-//   egyptTexture,
-//   maliTexture,
-//   indiaTexture,
-// ];
-
-// const cities: Sprite[] = [];
-// const speed = 2;
-
-// function spawnCity(x: number) {
-//   const tex = cityTextures[(Math.random() * cityTextures.length) | 0];
-//   const city = new Sprite(tex);
-
-//   city.zIndex = 101;
-//   city.anchor.set(0.5);
-//   city.scale.set(1.5);
-//   city.x = x;
-//   city.y = app.screen.height + 50;
-//   city.alpha = 0.1;
-//   app.stage.addChild(city);
-//   cities.push(city);
-// }
-
-// // first city
-// spawnCity(app.screen.width * 0.7);
-
-    app.ticker.add(() => {
-        // for (let i = cities.length - 1; i >= 0; i--) {
-        //   const c = cities[i];
-        //   c.x -= speed;
-
-        //   // if off left, remove
-        //   if (c.x < -100) {
-        //     app.stage.removeChild(c);
-        //     cities.splice(i, 1);
-        //   }
-        // }
-
-        // // if only one city left and it's near the left side, spawn next
-        // if (cities.length === 1 && cities[0].x < app.screen.width * 0.4) {
-        //   spawnCity(app.screen.width + 150); // new one from right
-        // }
-        const t = performance.now() - t0;
-        // if (!hovering) {
-        //   // smooth approach on X
-        //   const dx = targetX() - plane.x;
-        //   plane.x += Math.min(2.0, dx * 0.08);
-
-        //   // smooth climb on Y
-        //   plane.y += (hoverY - plane.y) * 0.06;
-
-        //   const pad = 40;
-        //   plane.y = Math.max(pad, Math.min(app.screen.height - pad, plane.y));
-
-        // horizontal swing + vertical bob
-        // const offsetX = Math.sin(t * 0.0008) * 40; // slower side-to-side
-        const offsetY = Math.sin(t * 0.001) * 10; // slower up-down
-
-        // plane.x = targetX() + offsetX;
+    const startTime = performance.now();
+    const hoverY = app.screen.height * 0.35;
+    
+    const bobbingTicker = () => {
+        const elapsed = performance.now() - startTime;
+        const offsetY = Math.sin(elapsed * BOBBING_SPEED) * BOBBING_AMPLITUDE;
         plane.y = hoverY + offsetY;
-    });
+    };
+    
+    app.ticker.add(bobbingTicker);
 
-    function addStars() {
-        type Star = Graphics & {
-            speed: number;
-            blink?: boolean;
-            blinkPhase?: number;
-            blinkSpeed?: number;
-        };
+    const cleanup = () => {
+        animationController.destroy();
+        planeSound.stop();
+        planeSound.unload();
+        app.ticker.remove(bobbingTicker);
+    };
 
-        app.stage.sortableChildren = true;
-
-        const STAR_MARGIN = 300;
-        const starCount = Math.ceil(app.screen.width / 15);
-        const stars: Star[] = [];
-
-        // create and add to stage
-        for (let i = 0; i < starCount; i++) {
-            const star = new Graphics() as Star;
-
-            // position within screen, with small overscan so edges aren't empty
-            star.x = Math.random() * (app.screen.width + STAR_MARGIN * 2) - STAR_MARGIN;
-            star.y =
-                Math.random() * (app.screen.height + STAR_MARGIN * 2) - STAR_MARGIN;
-
-            // size
-            const small = 0.2 + Math.random() * 1.1;
-            const big = 1 + Math.random() * 1.2;
-            const r = Math.random() < 0.5 ? small : big;
-
-            // blink
-            if (Math.random() < 0.1) {
-                star.blink = true;
-                star.blinkPhase = Math.random() * Math.PI * 3;
-                star.blinkSpeed = 2000 + Math.random() * 3000;
-            }
-
-            // draw
-            star.star(0, 0, 4, r, r / 2);
-            star.fill({color: 0xffffff, alpha: 0.7});
-            star.zIndex = 100;
-
-            // speed: small stars a bit slower, big a bit faster
-            const minSpeed = 1.2;
-            const maxSpeed = 2.6;
-            const t = Math.min(1, Math.max(0, (r - 0.2) / (2.2 - 0.2))); // 0..1
-            star.speed = minSpeed + t * (maxSpeed - minSpeed);
-
-            app.stage.addChild(star);
-            stars.push(star);
+    window.addEventListener('beforeunload', cleanup);
+    
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            app.ticker.stop();
+        } else {
+            app.ticker.start();
         }
-
-        // multipliers and tickers
-        // let accel = 0; // extra scroll after a few seconds
-        let frames = 0;
-
-        const moveTicker = new Ticker();
-        moveTicker.add((ticker) => {
-            const dt = ticker.deltaTime; // frames at 60 fps ≈ 1
-            frames += dt;
-
-            // if (frames > 240 && accel < 2.5) {
-            //   accel = Math.min(2.5, accel + 0.005 * dt);
-            // }
-
-            for (const s of stars) {
-                s.x -= 1.5 * dt; // dt is number now
-                if (s.x < -STAR_MARGIN) {
-                    s.x = app.screen.width + STAR_MARGIN;
-                    s.y = Math.random() * app.screen.height;
-                }
-            }
-        });
-        moveTicker.start();
-
-        const blinkTicker = new Ticker();
-        blinkTicker.add((_ticker) => {
-            const now = performance.now();
-            for (const s of stars) {
-                if (s.blink) {
-                    const a = Math.abs(Math.sin(now / s.blinkSpeed! + s.blinkPhase!));
-                    s.alpha = 0.35 + 0.65 * a;
-                }
-            }
-        });
-        blinkTicker.start();
-    }
-
-    addStars();
-
+    });
 }
 
-
-runApplication()
-
+runApplication().catch((error) => {
+    console.error('Failed to run application:', error);
+});
