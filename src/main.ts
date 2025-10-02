@@ -1,5 +1,6 @@
 import { Application, Assets, AnimatedSprite, Texture } from "pixi.js";
 import { Howl } from "howler";
+import { ParallaxBackground } from "./parallaxBackground";
 
 const IDLE = 21;
 const MIN = 16;
@@ -141,11 +142,17 @@ async function runApplication() {
 
     await Assets.load("plane-data-64.json");
 
+    // Initialize parallax background system
+    const parallaxBackground = new ParallaxBackground(app);
+
+    // Load initial layers (Day only)
+    await parallaxBackground.loadInitialLayers('Day');
+
     const sequences = createSequences();
 
     const plane = new AnimatedSprite([sequences.full[0]]);
     plane.loop = false;
-    plane.scale.set(0.8);
+    plane.scale.set(0.6);
     plane.zIndex = 102;
     plane.anchor.set(0.5);
     plane.x = app.screen.width * 0.5;
@@ -174,14 +181,40 @@ async function runApplication() {
         const offsetY = Math.sin(elapsed * BOBBING_SPEED) * BOBBING_AMPLITUDE;
         plane.y = hoverY + offsetY;
     };
+
+    // Parallax update ticker with acceleration
+    let scrollOffset = 0;
+    let currentSpeed = 10.0; // Starting speed
+    const maxSpeed = 40.0; // Maximum speed
+    const acceleration = 0.001; // Acceleration rate per frame
+    const accelerationStartTime = performance.now();
+    
+    const parallaxTicker = () => {
+        // Update parallax background with scroll offset
+        parallaxBackground.update(16, scrollOffset); // 16ms delta time approximation
+        
+        // Calculate target speed based on time elapsed
+        const elapsed = performance.now() - accelerationStartTime;
+        const timeAcceleration = Math.min(elapsed / 10000, 1); // 10 seconds to reach max acceleration
+        const targetSpeed = currentSpeed + (maxSpeed - currentSpeed) * timeAcceleration;
+        
+        // Gradually increase current speed towards target
+        currentSpeed += (targetSpeed - currentSpeed) * acceleration;
+        
+        // Apply current speed to scroll offset
+        scrollOffset += currentSpeed;
+    };
     
     app.ticker.add(bobbingTicker);
+    app.ticker.add(parallaxTicker);
 
     const cleanup = () => {
         animationController.destroy();
         planeSound.stop();
         planeSound.unload();
         app.ticker.remove(bobbingTicker);
+        app.ticker.remove(parallaxTicker);
+        parallaxBackground.destroy();
     };
 
     window.addEventListener('beforeunload', cleanup);
