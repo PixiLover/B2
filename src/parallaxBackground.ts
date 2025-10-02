@@ -22,9 +22,10 @@ export class ParallaxBackground {
     private isLoaded: boolean = false;
     private citySequence: number[] = [1, 2, 3, 5];
     private layerCityIndices: number[] = [0, 0, 0, 0, 0]; // Track which city each layer is currently showing
-    private isSwitchingCity: boolean[] = [false, false, false, false, false]; // Prevent multiple switches per layer
-    private lastSwitchTime: number[] = [0, 0, 0, 0, 0]; // Track when each layer last switched
-    private switchCooldown: number = 1000; // 1 second cooldown between switches
+    // City switching variables (currently disabled)
+    // private isSwitchingCity: boolean[] = [false, false, false, false, false];
+    // private lastSwitchTime: number[] = [0, 0, 0, 0, 0];
+    // private switchCooldown: number = 1000;
 
     constructor(app: Application) {
         this.app = app;
@@ -210,6 +211,8 @@ export class ParallaxBackground {
         });
     }
 
+    // City switching methods (currently disabled)
+    /*
     private async loadLayerTextureForAllSprites(layerIndex: number, cityId: number, sprites: Sprite[]): Promise<void> {
         const layerNumber = layerIndex + 1; // Start from 1.png
         // Use night for all layers
@@ -252,7 +255,9 @@ export class ParallaxBackground {
             console.warn(`Failed to load texture: ${texturePath}`, error);
         }
     }
+    */
 
+    /*
     private async loadLayerTexture(layerIndex: number, cityId: number, sprite: Sprite): Promise<void> {
         const layerNumber = layerIndex + 1; // Start from 1.png
         // Use night for all layers
@@ -290,6 +295,7 @@ export class ParallaxBackground {
             console.warn(`Failed to load texture: ${texturePath}`, error);
         }
     }
+    */
 
     getCurrentTimeOfDay(): 'Day' | 'Night' {
         return this.currentTimeOfDay;
